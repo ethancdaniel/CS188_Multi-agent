@@ -156,26 +156,24 @@ class MinimaxAgent(MultiAgentSearchAgent):
         """
         "*** YOUR CODE HERE ***"
         def minAction(gameState, depth, agentIndex):
-            if depth <= 0 or gameState.isLose() or gameState.isWin():
+            if depth < 0 or gameState.isLose() or gameState.isWin():
                 return (self.evaluationFunction(gameState), Directions.STOP)
             v = float("inf")
             worstAction = Directions.STOP
             func = maxAction
-            if agentIndex < gameState.getNumAgents():
+            nextAgent = 0
+            if agentIndex < gameState.getNumAgents() - 1:
                 func = minAction
                 nextAgent = agentIndex + 1
             for action in gameState.getLegalActions(agentIndex):
                 successor = gameState.generateSuccessor(agentIndex, action)
-                if func == maxAction:
-                    resultV = func(successor, depth)[0]
-                else:
-                    resultV = func(successor, depth, nextAgent)[0]
+                resultV = func(successor, depth, nextAgent)[0]
                 if v > resultV:
                     v = resultV
                     worstAction = action
             return (v, worstAction)
 
-        def maxAction(gameState, depth):
+        def maxAction(gameState, depth, agentIndex):
             if depth <= 0 or gameState.isLose() or gameState.isWin():
                 return (self.evaluationFunction(gameState), Directions.STOP)
             v = float("-inf")
@@ -184,13 +182,12 @@ class MinimaxAgent(MultiAgentSearchAgent):
             for action in gameState.getLegalActions(0):
                 successor = gameState.generateSuccessor(0, action)
                 minResult = minAction(successor, depth, 1)[0]
-                print(minAction(successor, depth, 1))
                 if v < minResult:
                     v = minResult
                     bestAction = action
             return (v, bestAction)
 
-        return maxAction(gameState, self.depth)[1]
+        return maxAction(gameState, self.depth, 0)[1]
 
 
 class AlphaBetaAgent(MultiAgentSearchAgent):

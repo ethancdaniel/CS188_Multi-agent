@@ -200,7 +200,55 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        def minValue(gameState, depth, agentIndex, alpha, beta):
+            if depth < 0 or gameState.isLose() or gameState.isWin():
+                return (self.evaluationFunction(gameState), Directions.STOP)
+            v = float("inf")
+            for action in gameState.getLegalActions(agentIndex):
+                successor = gameState.generateSuccessor(agentIndex, action)
+                if agentIndex != 0:
+                    v = min(v, minValue(successor, depth,
+                                        agentIndex - 1, float('-inf'), float('inf'))[0])
+                    if v < alpha:
+                        return (v, action)
+                    beta = min(beta, v)
+                else:
+                    v = min(v, maxValue(successor, depth, 0, alpha, beta)[0])
+                    if v < alpha:
+                        return (v, action)
+                    beta = min(beta, v)
+            return (v, Directions.STOP)
+
+        def maxValue(gameState, depth, agentIndex, alpha, beta):
+            if depth <= 0 or gameState.isLose() or gameState.isWin():
+                return (self.evaluationFunction(gameState), Directions.STOP)
+            v = float('-inf')
+            depth -= 1
+            for action in gameState.getLegalActions(0):
+                successor = gameState.generateSuccessor(0, action)
+                v = max(v, minValue(successor, depth,
+                                    gameState.getNumAgents() - 1, float('-inf'), float('inf'))[0])
+                if v > beta:
+                    return (v, action)
+                alpha = max(alpha, v)
+            return (v, Directions.STOP)
+        return maxValue(gameState, self.depth, 0, float('-inf'), float('inf'))[1]
+
+        # bestAction = Directions.STOP
+        # alpha = float("-inf")
+        # beta = float("inf")
+        # v = float("-inf")
+        # agent_index = 0
+        # for action in gameState.getLegalActions(0):
+        #     successor = gameState.generateSuccessor(0, action)
+        #     old_v = v
+        #     v = max(v, maxValue(successor, self.depth, alpha, beta))
+        #     if v > old_v:
+        #         bestAction = action
+        #     if v > beta:
+        #         return bestAction
+        #     alpha = max(alpha, v)
+        # return bestAction
 
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
@@ -216,7 +264,38 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         legal moves.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        def maxValue(gameState, depth):
+            if depth <= 0 or gameState.isLose() or gameState.isWin():
+                return self.evaluationFunction(gameState)
+            v = float("-inf")
+            bestAction = Directions.STOP
+            for action in gameState.getLegalActions(0):
+                successor = gameState.generateSuccessor(0, action)
+                v = max(v, expValue(successor, depth, 1))
+            return v
+
+        def expValue(gameState, depth, agentIndex):
+            if depth <= 0 or gameState.isLose() or gameState.isWin():
+                return self.evaluationFunction(gameState)
+            v = 0
+            for action in gameState.getLegalActions(agentIndex):
+                successor = gameState.generateSuccessor(agentIndex, action)
+                if agentIndex != gameState.getNumAgents() - 1:
+                    v += expValue(successor, depth, agentIndex + 1)
+                else:
+                    v += maxValue(successor, depth - 1)
+            return v / len(gameState.getLegalActions(agentIndex))
+
+        bestAction = Directions.STOP
+        v = float('-inf')
+        agent_index = 0
+        for action in gameState.getLegalActions(0):
+            successor = gameState.generateSuccessor(0, action)
+            old_v = v
+            v = max(v, expValue(successor, self.depth, agent_index + 1))
+            if v > old_v:
+                bestAction = action
+        return bestAction
 
 
 def betterEvaluationFunction(currentGameState):
@@ -227,40 +306,24 @@ def betterEvaluationFunction(currentGameState):
     DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
-    print("YURRRRRR")
     newPos = currentGameState.getPacmanPosition()
     newFood = currentGameState.getFood()
     newGhostStates = currentGameState.getGhostStates()
     newScaredTimes = [
         ghostState.scaredTimer for ghostState in newGhostStates]
-
-    "*** YOUR CODE HERE ***"
-    # totalScore = 0.0
-    # for i in range(len(newGhostStates)):
-    #     if newScaredTimes[i] >= manhattanDistance(newGhostStates[i].getPosition(), newPos):
-    #         totalScore += 200
-    # x, y = newPos
-    # foodValues = currentGameState.getFood()
+    totalScore = 0.0
+    for i in range(len(newGhostStates)):
+        if newScaredTimes[i] >= manhattanDistance(newGhostStates[i].getPosition(), newPos):
+            totalScore += 200
+    x, y = newPos
+    foodValues = currentGameState.getFood()
     distToFood = 0
     if not newFood.asList():
         distToFood = 1
     else:
         distToFood = 1 / min([manhattanDistance(newPos, foodPos)
                               for foodPos in newFood.asList()])
-    print(distToFood)
     return currentGameState.getScore() + distToFood
-    # evalScore = 0
-    # weight_close_to_ghost = -10
-    # weight_close_to_scared = 10
-    # pacman_pos = currentGameState.getPacmanPosition()
-    # ghost_states = currentGameState.getGhostStates()
-    # ghost_timers = [(state, state.scaredTimer) for state in ghost_states]
-    # for ghost, timer in ghost_timers:
-    #     if manhattanDistance(pacman_pos, ghost) < timer:
-    #         evalScore += weight_close_to_scared
-    #     elif manhattanDistance(pacman_pos, ghost) < 4 and timer == 0:
-    #         evalScore += weight_close_to_ghost
-    # return evalScore + currentGameState.getScore()
 
 
 # Abbreviation

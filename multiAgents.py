@@ -227,7 +227,40 @@ def betterEvaluationFunction(currentGameState):
     DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    print("YURRRRRR")
+    newPos = currentGameState.getPacmanPosition()
+    newFood = currentGameState.getFood()
+    newGhostStates = currentGameState.getGhostStates()
+    newScaredTimes = [
+        ghostState.scaredTimer for ghostState in newGhostStates]
+
+    "*** YOUR CODE HERE ***"
+    # totalScore = 0.0
+    # for i in range(len(newGhostStates)):
+    #     if newScaredTimes[i] >= manhattanDistance(newGhostStates[i].getPosition(), newPos):
+    #         totalScore += 200
+    # x, y = newPos
+    # foodValues = currentGameState.getFood()
+    distToFood = 0
+    if not newFood.asList():
+        distToFood = 1
+    else:
+        distToFood = 1 / min([manhattanDistance(newPos, foodPos)
+                              for foodPos in newFood.asList()])
+    print(distToFood)
+    return currentGameState.getScore() + distToFood
+    # evalScore = 0
+    # weight_close_to_ghost = -10
+    # weight_close_to_scared = 10
+    # pacman_pos = currentGameState.getPacmanPosition()
+    # ghost_states = currentGameState.getGhostStates()
+    # ghost_timers = [(state, state.scaredTimer) for state in ghost_states]
+    # for ghost, timer in ghost_timers:
+    #     if manhattanDistance(pacman_pos, ghost) < timer:
+    #         evalScore += weight_close_to_scared
+    #     elif manhattanDistance(pacman_pos, ghost) < 4 and timer == 0:
+    #         evalScore += weight_close_to_ghost
+    # return evalScore + currentGameState.getScore()
 
 
 # Abbreviation
